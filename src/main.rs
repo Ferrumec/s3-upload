@@ -179,7 +179,9 @@ async fn upload(
                 .into_response()
         }
         Err(err) => {
-            error!(error = %err, "S3 upload failed");
+            use aws_sdk_s3::error::DisplayErrorContext;
+
+error!(error = %DisplayErrorContext(&err), "S3 upload failed");
             error_response(StatusCode::BAD_GATEWAY, "storage upload failed")
         }
     }
@@ -212,9 +214,11 @@ async fn access_file(State(state): State<AppState>, Query(query): Query<AccessQu
 
     let content_length = output.content_length();
 
-    let stream = tokio_util::io::ReaderStream::new(output.body.into_async_read());
+    let stream = tokio_util::io::ReaderStream::new(
+    output.body.into_async_read(),
+);
 
-    let mut response = Response::new(Body::from_stream(stream));
+let mut response = Response::new(Body::from_stream(stream));
     *response.status_mut() = StatusCode::OK;
 
     if let Ok(value) = header::HeaderValue::from_str(&content_type) {
@@ -279,8 +283,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .region(aws_config::Region::new(region))
         .load()
         .await;
-    let s3 = S3Client::new(&aws_config);
+    use aws_sdk_s3::config::{Builder as S3ConfigBuilder, RequestChecksumCalculation, ResponseChecksumValidation};
 
+let endpoint = env::var("S3_ENDPOINT").unwrap_or_else(|_| "http://127.0.0.1:9000".into());
+    
+
+let s3_config = S3ConfigBuilder::from(&aws_config)
+    .endpoint_url(endpoint)
+    .force_path_style(true) // http://host:9000/bucket/key, not bucket.host
+    .request_checksum_calculation(RequestChecksumCalculation::WhenRequired)
+    .response_checksum_validation(ResponseChecksumValidation::WhenRequired)
+    .build();
+
+let s3 = S3Client::from_conf(s3_config);
     let state = AppState {
         s3,
         bucket: Arc::from(bucket),
