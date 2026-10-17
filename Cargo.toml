@@ -4,17 +4,20 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-axum = { version = "0.8", features = ["http1", "json", "tokio"] }
+#axum = { version = "0.8", features = ["http1", "json", "tokio"] }
 aws-config = "1"
 aws-sdk-s3 = "1"
-aws-smithy-types = "1"
+#aws-smithy-types = "1"
 bytes = "1"
 futures-util = "0.3"
 http = "1"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal"] }
-tower-http = { version = "0.6", features = ["trace"] }
+#tower-http = { version = "0.6", features = ["trace"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 uuid = { version = "1", features = ["v4"] }
 tokio-util = { version = "0.7", features = ["io"] }
+actix-web = "4.17.0"
+tracing-actix-web = "0.7.25"
+percent-encoding = "2.3.2"
