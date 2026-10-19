@@ -21,8 +21,8 @@ tokio-util = { version = "0.7", features = ["io"] }
 actix-web = "4.17.0"
 tracing-actix-web = "0.7.25"
 percent-encoding = "2.3.2"
-viewset = { version = "0.6.2", features = ["web"] }
-ferrumec = { version = "0.4.5", features = ["launch", "pg"] }
+viewset = { version = "0.6.3", features = ["web"] }
+ferrumec = { version = "0.4.6", features = ["launch", "pg"] }
 sqlx = { version = "0.9.0", features = ["postgres", "runtime-tokio"] }
 chrono = "0.4.45"
 serde_json = "1.0.154"

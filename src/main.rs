@@ -16,7 +16,6 @@
 //!
 //! `ferrumec::launch` listens on 127.0.0.1:8080. See `config.rs` for every setting.
 
-mod auth;
 mod config;
 mod events;
 mod handlers;

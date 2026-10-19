@@ -10,7 +10,6 @@ use uuid::Uuid;
 use viewset::{DefaultRepo, web::Session};
 
 use crate::{
-    auth::Auth,
     config::Config,
     handlers,
     limits::UserLimits,
@@ -21,7 +20,7 @@ use crate::{
 
 pub struct FilesModule {
     state: Arc<AppState>,
-    auth: Auth,
+    auth: Arc<viewset::web::SessionMiddleware>,
 }
 
 impl Module for FilesModule {
@@ -36,10 +35,7 @@ impl Module for FilesModule {
         let db = infra.database();
         model::migrate(&db).await?;
         let repo = DefaultRepo::<FileRecord>::new(db.clone(), infra.cache_factory());
-        let sessions = infra
-            .cache_factory()
-            .new_cache::<Uuid, Session>("sessions_items", Duration::from_secs(30 * 60));
-
+        
         let limits = UserLimits::new(&cfg);
         {
             let limits = Arc::clone(&limits);
@@ -52,7 +48,7 @@ impl Module for FilesModule {
             });
         }
 
-        let auth = Auth::new(sessions, cfg.session_cookie.clone());
+        let auth = Arc::new(viewset::web::SessionMiddleware::new(infra.cache_factory()));
         let state = AppState {
             s3,
             bucket: Arc::from(bucket),
@@ -74,7 +70,7 @@ impl Module for FilesModule {
         service_conf.service(
             web::scope(&format!("/{}", namespace.trim_matches('/')))
                 .app_data(web::Data::from(Arc::clone(&self.state)))
-                .app_data(web::Data::new(self.auth.clone()))
+                .wrap(self.auth.clone())
                 .service(
                     web::resource("/v1/files")
                         .route(web::put().to(handlers::upload))

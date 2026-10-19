@@ -22,7 +22,6 @@ use uuid::Uuid;
 use viewset::{ApiError, Page, PaginationParams, Repository};
 
 use crate::{
-    auth::Principal,
     events::{self, FileDeleted, FileUploaded},
     limits::{Denied, UserLimits},
     metrics, model,
@@ -69,12 +68,12 @@ pub struct UploadQuery {
 
 pub async fn upload(
     req: HttpRequest,
-    principal: Principal,
+    principal: viewset::web::Identity,
     query: web::Query<UploadQuery>,
     mut payload: web::Payload,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    let user = principal.user_id;
+    let user = principal.sub;
     let metrics = metrics::get();
 
     // Cheap rejections first: they cost nothing and read no body.
@@ -211,7 +210,7 @@ fn query_u32(q: &HashMap<String, String>, key: &str, default: u32) -> u32 {
 }
 
 pub async fn list(
-    principal: Principal,
+    principal: viewset::web::Identity,
     query: web::Query<HashMap<String, String>>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
@@ -231,7 +230,7 @@ pub async fn list(
             filters.insert(key.into(), value.clone());
         }
     }
-    filters.insert("owner_id".into(), principal.user_id.to_string());
+    filters.insert("owner_id".into(), principal.sub.to_string());
 
     match state.repo.list(&filters).await {
         Ok((records, total)) => {
@@ -244,11 +243,11 @@ pub async fn list(
 }
 
 pub async fn metadata(
-    principal: Principal,
+    principal: viewset::web::Identity,
     path: web::Path<Uuid>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    match load_owned(&state, principal.user_id, path.into_inner()).await {
+    match load_owned(&state, principal.sub, path.into_inner()).await {
         Ok(record) => HttpResponse::Ok().json(FileView::from(&record)),
         Err(resp) => resp,
     }
@@ -267,11 +266,11 @@ struct DownloadState {
 }
 
 pub async fn download(
-    principal: Principal,
+    principal: viewset::web::Identity,
     path: web::Path<Uuid>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    let user = principal.user_id;
+    let user = principal.sub;
     let metrics = metrics::get();
 
     let record = match load_owned(&state, user, path.into_inner()).await {
@@ -375,11 +374,11 @@ pub async fn download(
 // ---------------------------------------------------------------------------
 
 pub async fn delete(
-    principal: Principal,
+    principal: viewset::web::Identity,
     path: web::Path<Uuid>,
     state: web::Data<AppState>,
 ) -> HttpResponse {
-    let user = principal.user_id;
+    let user = principal.sub;
     let record = match load_owned(&state, user, path.into_inner()).await {
         Ok(record) => record,
         Err(resp) => return resp,
