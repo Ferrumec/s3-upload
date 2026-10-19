@@ -1,0 +1,9 @@
+{
+  "permissions": [
+    { "method": "PUT",    "url": "/api/files/v1/files",               "bit_id": 40 },
+    { "method": "GET",    "url": "/api/files/v1/files",               "bit_id": 41 },
+    { "method": "GET",    "url": "/api/files/v1/files/{id}",          "bit_id": 42 },
+    { "method": "GET",    "url": "/api/files/v1/files/{id}/download", "bit_id": 43 },
+    { "method": "DELETE", "url": "/api/files/v1/files/{id}",          "bit_id": 44 }
+  ]
+}
