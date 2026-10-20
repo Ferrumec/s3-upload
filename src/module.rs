@@ -4,10 +4,9 @@
 use std::{env, sync::Arc, time::Duration};
 
 use actix_web::web;
-use ferrumec::{CacheFactory, Infra, Module};
+use ferrumec::{Infra, Module};
 use tokio::sync::Semaphore;
-use uuid::Uuid;
-use viewset::{DefaultRepo, web::Session};
+use viewset::DefaultRepo;
 
 use crate::{
     config::Config,
