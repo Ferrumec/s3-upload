@@ -34,7 +34,7 @@ impl Module for FilesModule {
         let db = infra.database();
         model::migrate(&db).await?;
         let repo = DefaultRepo::<FileRecord>::new(db.clone(), infra.cache_factory());
-        
+
         let limits = UserLimits::new(&cfg);
         {
             let limits = Arc::clone(&limits);

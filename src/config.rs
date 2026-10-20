@@ -50,7 +50,6 @@ pub struct Config {
     pub user_upload_quota: u64,
     pub user_download_quota: u64,
     pub quota_window: Duration,
-    pub session_cookie: String,
 }
 
 pub fn env_parse<T>(name: &str, default: T) -> Result<T, String>
@@ -83,7 +82,6 @@ impl Config {
             user_upload_quota: env_parse("USER_UPLOAD_QUOTA_BYTES", 1024 * MIB)?,
             user_download_quota: env_parse("USER_DOWNLOAD_QUOTA_BYTES", 5 * 1024 * MIB)?,
             quota_window: env_secs("QUOTA_WINDOW_SECS", 3600)?,
-            session_cookie: env::var("SESSION_COOKIE").unwrap_or_else(|_| "session".into()),
         };
         if cfg.part_size < MIN_PART_SIZE {
             return Err(format!("PART_SIZE_BYTES must be at least {MIN_PART_SIZE}"));
